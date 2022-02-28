@@ -30,6 +30,7 @@ client.on('messageCreate', (message) => {
             case 'ping':
                 message.channel.send(`Pong! Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms.`);
                 break;
+
             case 'clear':
                 if (!message.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) return message.channel.send("You need `manage_messages` permission to execute this command.").then(message => {setTimeout(() => {message.delete()}, 2500)});
                 if(!Number(args[0])) return message.channel.send("You need to enter a valid amount.").then(message => {setTimeout(() => {message.delete()}, 2500)});
@@ -41,48 +42,51 @@ client.on('messageCreate', (message) => {
                         });
                 });
                 break;
+
             case 'crypto' || 'check':
                 if (args.length !== 2) {
                     return message.reply(
                         `You must provide the crypto and the currency you want to compare:\n${prefix}crypto [CryptoCurrency] [Currency]`
                     );
                 } else {
-                    const coin = args[0].toLowerCase(); // Get rid off the grammar
-                    const vsCurrency = args[1].toLowerCase();
-                    try {
-                        axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${vsCurrency}`) // Get crypto price from coingecko API
-                            .then(response => {
-                                const data = response;
-                            })
+                    const coin = args[0].toLocaleLowerCase(); // Get rid off the grammar
+                    const vsCurrency = args[1].toLocaleLowerCase();
+                    axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${vsCurrency}`) // Get crypto price from coingecko API
+                        .then(response => {
+                            const data = response;
+                            // const price = data[coin][vsCurrency];
+        
+                            // if (!data[coin][vsCurrency]) throw Error(); // Check if data exists
+                            const crypto = coin.charAt(0).toUpperCase() + coin.slice(1);
+                            const currency = vsCurrency.toUpperCase();
 
-                        if (!data[coin][vsCurrency]) throw Error(); // Check if data exists
-                        const crypto = coin.charAt(0).toUpperCase() + coin.slice(1);
-                        const currency = vsCurrency.toUpperCase();
-            
-                        const embed = new MessageEmbed()
-                            .setColor('RANDOM')
-                            .setTitle("CoinGecko API")
-                            .setURL(`https://www.coingecko.com/en/coins/${coin}`)
-                            .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
-                            .addFields(
-                                {name: `${crypto} in ${currency}`, value:`${data[coin][vsCurrency]}`, inline: true}
-                            )
-                            .setImage('https://static.coingecko.com/s/coingecko-logo-d13d6bcceddbb003f146b33c2f7e8193d72b93bb343d38e392897c3df3e78bdd.png')
-                            .setTimestamp()
-                            .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
-            
-                        return message.channel.send({ embeds: [embed] });
-                    } catch (err) {
-                        log(err)
-                        return message.reply(
-                            `Please check your inputs.\n${prefix}crypto [CryptoCurrency] [Currency]`
-                        );
-                    }
+                            log(data.coin)
+
+                            // const embed = new MessageEmbed()
+                            //     .setColor('RANDOM')
+                            //     .setTitle("CoinGecko API")
+                            //     .setURL(`https://www.coingecko.com/en/coins/${coin}`)
+                            //     .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
+                            //     .addFields(
+                            //         {name: `${crypto} in ${currency}`, value:`${data[coin][vsCurrency]}`, inline: true}
+                            //     )
+                            //     .setImage('https://static.coingecko.com/s/coingecko-logo-d13d6bcceddbb003f146b33c2f7e8193d72b93bb343d38e392897c3df3e78bdd.png')
+                            //     .setTimestamp()
+                            //     .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                                
+                            // return message.channel.send({ embeds: [embed] });
+                        })
+                        // .catch(err => {
+                        //     log(err)
+                        //     return message.reply(
+                        //         `Please check your inputs.\n${prefix}crypto [CryptoCurrency] [Currency]`
+                        //     );
+                        // })
                 }
                 break;
+
             case 'news':
                 if (!args[0]) {
-
                     axios.get(`https://newsapi.org/v2/everything?q=crypto&apiKey=${newsapi}&pageSize=1&sortBy=publishedAt&language=en`).then(response => {
                         const data = response;
                         const {
@@ -92,24 +96,24 @@ client.on('messageCreate', (message) => {
                             url,
                             urlToImage,
                         } = data.articles[0];
+            
+                        const embed = new MessageEmbed()
+                            .setAuthor({ name: 'News', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
+                            .setTitle(title)
+                            .setURL(url)
+                            .setColor('RANDOM')
+                            .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
+                            .addFields(
+                                {name: `Article:`, value: `${description}`, inline: false},
+                                {name: name, value: `${url}`, inline: false}
+                            )
+                            .setImage(urlToImage)
+                            .setTimestamp()
+                            .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                            
+                        return message.channel.send({ embeds: [embed] })
                     })
-            
-                    const embed = new MessageEmbed()
-                        .setAuthor({ name: 'News', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
-                        .setTitle(title)
-                        .setURL(url)
-                        .setColor('RANDOM')
-                        .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
-                        .addFields(
-                            {name: `Article:`, value: `${description}`, inline: false},
-                            {name: name, value: `${url}`, inline: false}
-                        )
-                        .setImage(urlToImage)
-                        .setTimestamp()
-                        .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
-                    
-                    return message.channel.send({ embeds: [embed] })
-            
+
                 } else if (args[0]) {
                     axios.get(`https://newsapi.org/v2/everything?q=${args[0].toLowerCase()}&apiKey=${newsapi}&pageSize=1&sortBy=publishedAt&language=en`)
                         .then(response => {
@@ -123,25 +127,26 @@ client.on('messageCreate', (message) => {
                                 url,
                                 urlToImage,
                             } = data.articles[0];
-                        })
             
-                    const embed = new MessageEmbed()
-                        .setAuthor({ name: 'News', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
-                        .setTitle(title)
-                        .setURL(url)
-                        .setColor('RANDOM')
-                        .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
-                        .addFields(
-                            {name: `Article:`, value: `${description}`, inline: false},
-                            {name: name, value: `${url}`, inline: false}
-                        )
-                        .setImage(urlToImage)
-                        .setTimestamp()
-                        .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
-                        
-                    return message.channel.send({ embeds: [embed] })
+                            const embed = new MessageEmbed()
+                                .setAuthor({ name: 'News', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
+                                .setTitle(title)
+                                .setURL(url)
+                                .setColor('RANDOM')
+                                .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
+                                .addFields(
+                                    {name: `Article:`, value: `${description}`, inline: false},
+                                    {name: name, value: `${url}`, inline: false}
+                                )
+                                .setImage(urlToImage)
+                                .setTimestamp()
+                                .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                                
+                            return message.channel.send({ embeds: [embed] })
+                        })
                 }
                 break;
+
             case 'inflationrate' || 'rate':
                 if (!args[0]) return message.channel.send(`You must provide arguments. Refer to help: \`${prefix}inflationrate [country] [Type of Graphic]\`.`);
                 const params1 = args[0].toLocaleLowerCase();
@@ -150,21 +155,27 @@ client.on('messageCreate', (message) => {
                 axios.get(`https://www.statbureau.org/en/${params1}/monthly-inflation-current-year-mom.png?width=1028&height=1028&chartType=${params2}`)
                     .then(response =>  {
                         const data = response;
+
+                        const embed1 = new MessageEmbed()
+                            .setAuthor({ name: 'InflationRate', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
+                            .setColor('RANDOM')
+                            .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
+                            .addFields(
+                                {name: `InflationRate`, value: `Monthly Inflation Rate in ${countryname}`, inline: false}
+                            )
+                            .setImage(data)
+                            .setTimestamp()
+                            .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                            
+                        message.channel.send({ embeds: [embed1] })
+                    }).catch(err => {
+                        log(err)
+                        return message.reply(
+                            `Please check your inputs. Refer to help: \`${prefix}inflationrate [country] [Type of Graphic]\`.`
+                        );
                     })
-
-                const embed1 = new MessageEmbed()
-                    .setAuthor({ name: 'InflationRate', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
-                    .setColor('RANDOM')
-                    .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
-                    .addFields(
-                        {name: `InflationRate`, value: `Monthly Inflation Rate in ${countryname}`, inline: false}
-                    )
-                    .setImage(data)
-                    .setTimestamp()
-                    .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
-
-                message.channel.send({ embeds: [embed1] })
                 break;
+
             case 'infaltion' || 'see':
                 if (!args[0]) return message.channel.send(`You must provide some arguments here. Refer to help: \`${prefix}inflation [country] [StartDate] [EndDate]\``)
                 const listedcountry = args[0].charAt(0).toUpperCase() + args[0].slice(1);
