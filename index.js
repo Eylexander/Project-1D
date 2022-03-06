@@ -196,6 +196,7 @@ client.on('messageCreate', (message) => {
                 
                 message.channel.send({ embeds: [rateembed] })
                 break;
+
             case 'help':
                 const graphicslist = ['Area','Bar','BoxPlot','Bubble','Candlestick','Column','Doughnut','ErrorBar','FastLine','FastPoint','Funnel','Kagi','Line','Pie','Point','PointAndFigure','Polar','Pyramid','Radar','Range','RangeBar','RangeColumn','Renko','Spline','SplineArea','SplineRange','StackedArea','StackedArea100','StackedBar','StackedBar100','StackedColumn','StackedColumn100','StepLine','Stock','ThreeLineBreak']
                 const helpembed = new MessageEmbed()
@@ -216,6 +217,23 @@ client.on('messageCreate', (message) => {
                     .setTimestamp()
                     .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
 
+                message.channel.send({ embeds: [helpembed] })
+                break;
+        
+            case 'memes':
+                const { memes } = require('./memes/webhosted.json');
+
+                const memeembed = new MessageEmbed()
+                    .setAuthor({ name: 'InflationRate', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
+                    .setColor('RANDOM')
+                    .setImage(memes[Math.floor(Math.random()*memes.length)])
+                    .setTimestamp()
+                    // .setFooter({ name:`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+
+                // message.channel.send({embeds: [memeembed] })
+                message.channel.send(memes[Math.floor(Math.random()*memes.length)])
+
+                break;
         }
     }
 });
