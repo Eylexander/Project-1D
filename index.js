@@ -164,21 +164,31 @@ client.on('messageCreate', (message) => {
                 const listedcountry = args[0].charAt(0).toUpperCase() + args[0].slice(1);
                 const startDate = args[1].toLocaleLowerCase()
                 const endDate = args[2].toLocaleLowerCase()
-                // axios.get(`https://www.statbureau.org/calculate-inflation-price-jsonp`)
-                //     .then(resp => {
-                        const rateembed = new MessageEmbed()
-                            .setAuthor({ name: 'InflationRate', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
-                            .setColor('RANDOM')
-                            .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
-                            .addFields(
-                                {name: `Parameters`, value: `Country: ${listedcountry}\n Intervalle: ${startDate} - ${endDate}`, inline: false}
-                            )
-                            .setTimestamp()
-                            .setFooter({ text :`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                axios.get(`https://www.statbureau.org/calculate-inflation-price-jsonp?jsoncallback=?`, {
+                    country: args[0].toLocaleLowerCase(),
+                    start: startDate,
+                    end: endDate,
+                    amount: 100,
+                    format: true
+                })
+                    .then(resp => {
+                        // const rateembed = new MessageEmbed()
+                        //     .setAuthor({ name: 'InflationRate', iconURL: client.user.displayAvatarURL({ dynamic : true }) })
+                        //     .setColor('RANDOM')
+                        //     .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
+                        //     .addFields(
+                        //         {name: `Parameters`, value: `Country: ${listedcountry}\n Intervalle: ${startDate} - ${endDate}`, inline: false}
+                        //     )
+                        //     .setTimestamp()
+                        //     .setFooter({ text :`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
                             
-                        message.channel.send({ embeds: [rateembed] })
-                    // }).catch(err => {
+                        // message.channel.send({ embeds: [rateembed] })
+
+                        log(resp.data.data)
+                    })
+                    // .catch(err => {
                     //     log(err)
+                    //     log(resp.data.data)
                     // })
                 break;
 
@@ -194,14 +204,14 @@ client.on('messageCreate', (message) => {
                         .setThumbnail(client.user.displayAvatarURL({ dynamic : true }))
                         .addFields(
                             {name: `ping`, value: `Pong!`, inline: false},
-                            {name: `clear`, value: `Remove message as you wish!\n \`${prefix}clear [amount]\``, inline: false},
+                            {name: `clear`, value: `Removes messages as you wish!\n \`${prefix}clear [amount]\``, inline: false},
                             {name: `crypto`, value: `Check the price of your favorite CryptoCurrency!\n \`${prefix}crypto [CryptoCurrency] [Currency]\``, inline: false},
                             {name: `news`, value: `Get all the news you want about any subject!\n \`${prefix}news [subject]\``, inline: false},
-                            {name: `inflationrate`, value: `See the graphic of Inflation of your favorite country!\n \`${prefix}inflationrate [country] [Type of Graphic]\``, inline: false},
-                            {name: `inflation`, value: `Returns the Inflation Rate of your favorite country!\n \`${prefix}infaltion [country] [StartDate] [EndDate]\``, inline: false},
+                            {name: `inflationrate`, value: `See the graphic of Inflation of your favorite country!\n \`${prefix}inflationrate [country] [Type of Graphic]\` \n \`${prefix}help inflationrate\``, inline: false},
+                            {name: `inflation`, value: `Returns the Inflation Rate of your favorite country!\n \`${prefix}infaltion [country] [StartDate] [EndDate]\` \n \`${prefix}help inflation\``, inline: false},
                             {name: `memes`, value: `Check some Memes!\n \`${prefix}memes\``, inline: false},
                             {name: `invite`, value: `Invite me if you want!`, inline: false},
-                            {name: `help`, value: `Here you go!\n \`${prefix}help\``, inline: false},
+                            {name: `help`, value: `Here you go!`, inline: false},
                         )
                         .setTimestamp()
                         .setFooter({ text: `Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
