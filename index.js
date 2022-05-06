@@ -164,7 +164,7 @@ client.on('messageCreate', (message) => {
                 const listedcountry = args[0].charAt(0).toUpperCase() + args[0].slice(1);
                 const startDate = args[1].toLocaleLowerCase()
                 const endDate = args[2].toLocaleLowerCase()
-                axios.get(`https://www.statbureau.org/calculate-inflation-price-jsonp?jsoncallback=?`, {
+                axios.get(`https://www.statbureau.org/calculate-inflation-price-json?${params}`, {
                     country: args[0].toLocaleLowerCase(),
                     start: startDate,
                     end: endDate,
@@ -280,6 +280,15 @@ client.on('messageCreate', (message) => {
             case 'invite':
                 message.channel.send(`You can invite my bot on your server with this URL:\n https://discord.com/api/oauth2/authorize?client_id=946083059042766938&permissions=125968&scope=bot`)
                 break;
+
+            case 'test':
+                axios.get('https://eylexander.xyz/Project-1D')
+                    .then(resp => {
+                        log(JSON.stringify(resp.data, 0, 4))
+                    })
+                message.channel.send('Oui')
+                break;
+            
         }
     }
 });
