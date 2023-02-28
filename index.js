@@ -22,10 +22,11 @@ client.on('ready', () => {
     log(chalk.black.bgWhite(`${client.guilds.cache.size} Servers`) + (` - `) + chalk.black.bgWhite(`${eval(client.guilds.cache.map(g => g.memberCount).join(' + '))} Users`) + (`.`));
 });
 
-client.on('messageCreate', (message) => {
+client.on('messageCreate', async (message) => {
     if (message.content.startsWith(prefix)) {
         const args = message.content.slice(prefix.length).split(' ');
         const command = args.shift().toLowerCase();
+        
         switch (command) {
             case 'ping':
                 message.channel.send(`Pong! Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms.`);
@@ -43,7 +44,8 @@ client.on('messageCreate', (message) => {
                 });
                 break;
 
-            case 'crypto' || 'check':
+            case 'crypto':
+            case 'check':
                 if (args.length !== 2) {
                     return message.reply(
                         `You must provide the crypto and the currency you want to compare:\n${prefix}crypto [CryptoCurrency] [Currency]`
@@ -141,7 +143,8 @@ client.on('messageCreate', (message) => {
                 }
                 break;
 
-            case 'inflationrate' || 'rate':
+            case 'inflationrate':
+            case 'rate':
                 if (args.length !== 2) return message.channel.send(`You must provide arguments. Refer to help: \`${prefix}inflationrate [country] [Type of Graphic]\`.`);
                 const params1 = args[0].toLocaleLowerCase();
                 const countryname = params1.charAt(0).toUpperCase() + params1.slice(1);
@@ -159,7 +162,8 @@ client.on('messageCreate', (message) => {
                 message.channel.send({ embeds: [inflationrate] })
                 break;
 
-            case 'inflation' || 'see':
+            case 'inflation':
+            case 'see':
                 if (args.length !== 3) return message.channel.send(`You must provide some arguments here. Refer to help: \`${prefix}inflation [country] [StartDate] [EndDate]\``)
                 const listedcountry = args[0].charAt(0).toUpperCase() + args[0].slice(1);
                 const startDate = args[1].toLocaleLowerCase()
@@ -249,18 +253,22 @@ client.on('messageCreate', (message) => {
                 break;
         
             case 'memes':
-                const { memes } = require('./memes/webhosted.json');
-                const memefunction = memes[Math.floor(Math.random()*memes.length)];
+            case 'meme':
+                // Get the meme from the API
+                const { data } = await axios.get('https://api.eylexander.xyz/');
 
-                const memeembed = new MessageEmbed()
-                    .setTitle('If Bug, click Here')
-                    .setURL(memefunction)
-                    .setColor('RANDOM')
-                    .setImage(memefunction)
+                // Create the embed
+                const makeEmbed = new MessageEmbed()
+                    .setColor(Math.floor(Math.random() * 16777214) + 1)
+                    .setTitle(data.name.toString())
+                    .setURL(data.url)
+                    .setDescription('If the image is not loading, click the title to open the image in a new tab.')
+                    .setImage(data.url.toString())
                     .setTimestamp()
-                    .setFooter({ text :`Requested by ${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
+                    .setFooter({ text :`Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true })})
 
-                message.channel.send({embeds: [memeembed] })
+                // Send the embed
+                message.channel.send({ embeds: [makeEmbed] });
                 break;
 
             case 'stop':
@@ -281,14 +289,13 @@ client.on('messageCreate', (message) => {
                 message.channel.send(`You can invite my bot on your server with this URL:\n https://discord.com/api/oauth2/authorize?client_id=946083059042766938&permissions=125968&scope=bot`)
                 break;
 
-            case 'test':
-                axios.get('https://eylexander.xyz/Project-1D')
-                    .then(resp => {
-                        log(JSON.stringify(resp.data, 0, 4))
-                    })
-                message.channel.send('Oui')
+            case 'say':
+                if (message.author.id === admin) {
+                    const saymessage = args.join(' ');
+                    message.delete();
+                    message.channel.send(saymessage);
+                }
                 break;
-            
         }
     }
 });
